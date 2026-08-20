@@ -1,0 +1,12 @@
+<UserControl x:Class="WorkStationX.Views.WorkspaceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Margin="32" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock Text="Workspaces"
+                   FontSize="28" FontWeight="SemiBold" HorizontalAlignment="Center" />
+        <TextBlock Text="One click opens every app and site for a context."
+                   Opacity="0.6" Margin="0,8,0,0" HorizontalAlignment="Center" />
+        <TextBlock Text="Coming in v0.2"
+                   Opacity="0.4" Margin="0,24,0,0" HorizontalAlignment="Center" />
+    </StackPanel>
+</UserControl>

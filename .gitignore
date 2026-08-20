@@ -1,0 +1,47 @@
+## Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]64/
+publish/
+artifacts/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userprefs
+*.rsuser
+*.sln.docstates
+
+## Rider / VS Code
+.idea/
+.vscode/
+
+## Test results
+[Tt]est[Rr]esult*/
+coverage*.json
+coverage*.xml
+*.coverage
+
+## NuGet
+*.nupkg
+packages/
+!packages/build/
+
+## Local artefacts
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+## Office temp files
+~$*
+
+## OS
+Thumbs.db
+desktop.ini
