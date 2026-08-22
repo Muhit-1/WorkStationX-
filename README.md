@@ -78,15 +78,47 @@ Your data lives in `%APPDATA%\WorkStationX` — database, settings and logs.
 | Release | Scope | Status |
 |---|---|---|
 | v0.1 | Shell, DI, database, logging, tray | Done |
-| v0.2 | Workspace launcher | |
-| v0.3 | Tasks, timer, Time Bank | |
-| v0.4 | History and accuracy reporting | |
-| v0.5 | Reminders | |
-| v0.6 | Window pinner, colour picker | |
-| v0.7 | Screen ruler | |
-| v0.8 | Screenshot and annotation | |
-| v0.9 | Settings, hotkeys, backup | |
-| v1.0 | Installer, auto-update | |
+| v0.2 | Workspace launcher | Done |
+| v0.3 | Tasks, timer, Time Bank | Done |
+| v0.4 | History and accuracy reporting | Done |
+| v0.5 | Reminders | Done |
+| v0.6 | Window pinner, colour picker | Done |
+| v0.7 | Screen ruler | Done |
+| v0.8 | Screenshot and annotation | Done |
+| v0.9 | Settings, hotkeys, backup | Done |
+| v1.0 | Installer | Done |
+
+## Making an installer
+
+One command builds both the self-contained app and the setup file:
+
+```bash
+powershell -ExecutionPolicy Bypass -File build-installer.ps1
+```
+
+Step 1 publishes to `publish\` and always works. Step 2 needs
+[Inno Setup](https://jrsoftware.org/isdl.php); without it the script stops after step 1
+and tells you so.
+
+The result is `dist\WorkStationX-Setup-1.0.0.exe`, about 60-70 MB. It is
+**self-contained**, so the machine you install it on does not need .NET.
+
+Because the installer is not code-signed, Windows SmartScreen shows a blue
+"Windows protected your PC" box on first run. Click **More info** then **Run anyway**.
+A signing certificate costs roughly $200 a year and is the only way to remove it.
+
+## Shortcuts
+
+These work anywhere in Windows, even with WorkStationX in the tray. Change them in
+Settings.
+
+| Shortcut | Does |
+|---|---|
+| Ctrl + Shift + 2 | Capture a region |
+| Ctrl + Shift + 3 | Capture a window |
+| Ctrl + Shift + 4 | Pick a colour |
+| Ctrl + Shift + 5 | Show or hide the ruler |
+| Ctrl + Shift + W | Bring WorkStationX to the front |
 
 ## Licence
 

@@ -1,0 +1,91 @@
+<Window x:Class="WorkStationX.Views.CaptureWindowPicker"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Capture a window"
+        Width="620" Height="560"
+        WindowStartupLocation="CenterScreen" ShowInTaskbar="False"
+        Background="{DynamicResource Brush.Shell}">
+
+    <Border Background="{DynamicResource Brush.BayFace}"
+            BorderBrush="{DynamicResource Brush.EdgeWindow}" BorderThickness="1"
+            Padding="22,18">
+        <DockPanel>
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="CAPTURE A WINDOW"
+                           Style="{StaticResource Text.Engraved}" />
+                <Rectangle Grid.Column="1" Style="{StaticResource Panel.HeadRule}" Margin="10,0,0,0" />
+            </Grid>
+
+            <TextBlock DockPanel.Dock="Top" Style="{StaticResource Text.Note}" Margin="0,0,0,14"
+                       Text="Pick a window to capture. It is brought to the front first, so nothing sitting over it ends up in the shot." />
+
+            <Grid DockPanel.Dock="Bottom" Margin="0,14,0,0">
+                <Button Content="WHOLE DESKTOP" HorizontalAlignment="Left"
+                        Style="{StaticResource Button.Tool}" Padding="16,10"
+                        Click="OnWholeDesktop" />
+                <Button Content="CANCEL" HorizontalAlignment="Right" Width="130"
+                        Style="{StaticResource Button.Transport}" Padding="10,10"
+                        Click="OnCancel" IsCancel="True" />
+            </Grid>
+
+            <Border BorderBrush="{DynamicResource Brush.EdgeLo}" BorderThickness="1">
+                <ListBox x:Name="List" ItemsSource="{Binding}" Background="Transparent"
+                         BorderThickness="0" HorizontalContentAlignment="Stretch"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         MouseDoubleClick="OnRowActivated">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Cursor" Value="Hand" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="Face" Background="Transparent"
+                                                BorderBrush="{DynamicResource Brush.EdgeFaint}"
+                                                BorderThickness="0,0,0,1" Padding="12,10">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Face" Property="Background"
+                                                        Value="{DynamicResource Brush.HoverWash}" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Face" Property="Background"
+                                                        Value="{DynamicResource Brush.HoverWash}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Title}"
+                                               Style="{StaticResource Text.Title}"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding ProcessName}"
+                                               Style="{StaticResource Text.Mono}" Margin="0,2,0,0" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="CAPTURE" VerticalAlignment="Center"
+                                        Style="{StaticResource Button.Tool}" Padding="14,8"
+                                        Click="OnCaptureClicked" Tag="{Binding}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+        </DockPanel>
+    </Border>
+</Window>

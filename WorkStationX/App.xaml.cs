@@ -48,6 +48,8 @@ public partial class App : Application
                 shared: true)
             .CreateLogger();
 
+        BindingErrorListener.Attach();
+
         DispatcherUnhandledException += OnDispatcherUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
             Log.Fatal(args.ExceptionObject as Exception, "Unhandled domain exception");
@@ -58,16 +60,41 @@ public partial class App : Application
             await _host.StartAsync();
 
             // Apply migrations on the user's machine, not just the dev's.
-            using (var scope = _host.Services.CreateScope())
+            await using (var db = await _host.Services
+                             .GetRequiredService<IDbContextFactory<AppDbContext>>()
+                             .CreateDbContextAsync())
             {
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 await db.Database.MigrateAsync();
             }
+
+            // Restore the saved colourway before the window is shown, so the user
+            // never sees a flash of the default palette.
+            var settings = _host.Services.GetRequiredService<ISettingsService>();
+            _host.Services.GetRequiredService<IThemeService>().Apply(settings.Current.ThemeId);
 
             var shell = _host.Services.GetRequiredService<ShellViewModel>();
             var window = _host.Services.GetRequiredService<MainWindow>();
             MainWindow = window;
             window.Show();
+
+            // Hotkeys need a live window handle, so they attach after the window exists.
+            var hotkeys = _host.Services.GetRequiredService<IHotkeyService>();
+            var tools = _host.Services.GetRequiredService<ToolsViewModel>();
+
+            hotkeys.Attach(window);
+            hotkeys.Triggered += (_, action) =>
+            {
+                if (action == HotkeyAction.ShowApp)
+                {
+                    window.Show();
+                    window.WindowState = WindowState.Normal;
+                    window.Activate();
+                    return;
+                }
+
+                tools.Invoke(action);
+            };
+            hotkeys.Rebind(HotkeyDefaults.Load(settings.Current));
 
             await shell.InitializeAsync();
 
@@ -90,14 +117,32 @@ public partial class App : Application
             .UseSerilog()
             .ConfigureServices(services =>
             {
-                services.AddDbContext<AppDbContext>(options =>
+                // A factory, not a scoped context: the view-models are long-lived
+                // singletons, so injecting a scoped DbContext would capture one for
+                // the life of the app. Each operation opens and disposes its own.
+                services.AddDbContextFactory<AppDbContext>(options =>
                     options.UseSqlite($"Data Source={AppPaths.DatabaseFile}"));
 
                 services.AddSingleton<INavigationService, NavigationService>();
-
-                services.AddSingleton<WorkspaceViewModel>();
-                services.AddSingleton<TaskViewModel>();
+                services.AddSingleton<ISettingsService, SettingsService>();
+                services.AddSingleton<IThemeService>(_ => new ThemeService(Current));
+                services.AddSingleton<IDialogService, DialogService>();
+                services.AddSingleton<ILauncherService, LauncherService>();
+                services.AddSingleton<IChromeProfileService, ChromeProfileService>();
+                services.AddSingleton<INotificationService, NotificationService>();
+                services.AddSingleton<IWindowPinService, WindowPinService>();
+                services.AddSingleton<IColorPickService, ColorPickService>();
+                services.AddSingleton<IScreenCaptureService, ScreenCaptureService>();
+                services.AddSingleton<IHotkeyService, HotkeyService>();
                 services.AddSingleton<ToolsViewModel>();
+                services.AddHostedService<ReminderHostedService>();
+
+                services.AddSingleton<WorkspaceBayViewModel>();
+                services.AddSingleton<TaskBayViewModel>();
+                services.AddSingleton<TimeBankBayViewModel>();
+                services.AddSingleton<DashboardViewModel>();
+                services.AddSingleton<HistoryViewModel>();
+                services.AddSingleton<SettingsViewModel>();
                 services.AddSingleton<ShellViewModel>();
 
                 services.AddSingleton<MainWindow>();
@@ -118,6 +163,10 @@ public partial class App : Application
 
     protected override async void OnExit(ExitEventArgs e)
     {
+        // Release every pin: a window left topmost after we exit cannot be
+        // un-stuck by the user without restarting that app.
+        _host?.Services.GetService<IWindowPinService>()?.UnpinAll();
+
         if (_host is not null)
         {
             await _host.StopAsync(TimeSpan.FromSeconds(5));

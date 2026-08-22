@@ -1,0 +1,587 @@
+<UserControl x:Class="WorkStationX.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:WorkStationX.Views">
+
+    <UserControl.Resources>
+        <!-- A bay: anodised face, engraved heading, hairline rule, index, two screws.
+             Content goes in the ContentPresenter below the head. -->
+        <ControlTemplate x:Key="BayTemplate" TargetType="HeaderedContentControl">
+            <Border Style="{StaticResource Panel.Bay}">
+                <Grid>
+                    <Ellipse Style="{StaticResource Panel.Screw}"
+                             HorizontalAlignment="Left" VerticalAlignment="Top"
+                             Margin="-11,-11,0,0" />
+                    <Ellipse Style="{StaticResource Panel.Screw}"
+                             HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                             Margin="0,0,-11,-9" />
+
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,13">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Style="{StaticResource Text.Engraved}"
+                                       Text="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Rectangle Grid.Column="1" Style="{StaticResource Panel.HeadRule}"
+                                       Margin="10,0" />
+                            <TextBlock Grid.Column="2" Style="{StaticResource Text.Mono}"
+                                       Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Grid>
+                        <ContentPresenter />
+                    </DockPanel>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+    </UserControl.Resources>
+
+    <!-- 1px gaps show the near-black carcass between bays, as in the design -->
+    <Grid Background="{DynamicResource Brush.EdgeLo}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="302" />
+            <ColumnDefinition Width="*" MinWidth="380" />
+            <ColumnDefinition Width="356" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ============ BAY 1 — workspace switch bank ============ -->
+        <HeaderedContentControl Grid.Column="0" Template="{StaticResource BayTemplate}"
+                        Header="WORKSPACES" Tag="{Binding Workspaces.Count}" Margin="0,0,1,0"
+                        DataContext="{Binding Workspaces}">
+            <DockPanel>
+                <Button DockPanel.Dock="Top" Style="{StaticResource Button.New}"
+                        Margin="0,11,0,0" Command="{Binding AddCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="+" Foreground="{DynamicResource Brush.Prime}"
+                                   FontSize="15" Margin="0,0,6,0" />
+                        <TextBlock Text="NEW WORKSPACE" />
+                    </StackPanel>
+                </Button>
+
+                <TextBlock DockPanel.Dock="Bottom" VerticalAlignment="Bottom"
+                           Style="{StaticResource Text.Note}" Margin="0,14,0,0"
+                           Text="A switch stays lit while its apps are open. Flip it off to close the set and leave everything else alone." />
+
+                <Grid VerticalAlignment="Top">
+                    <!-- empty state -->
+                    <Border BorderBrush="{DynamicResource Brush.EdgeLo}" BorderThickness="1"
+                            Padding="14,26"
+                            Visibility="{Binding Workspaces.Count,
+                                         Converter={StaticResource ZeroToVisible}}">
+                        <TextBlock Style="{StaticResource Text.Note}" TextAlignment="Center"
+                                   Text="No workspaces yet.&#x0a;Create one to open a whole context at once." />
+                    </Border>
+
+                    <!-- the switch bank -->
+                    <ItemsControl ItemsSource="{Binding Workspaces}"
+                                  Visibility="{Binding Workspaces.Count,
+                                               Converter={StaticResource NonZeroToVisible}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Background="{DynamicResource Brush.EdgeLo}" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton Style="{StaticResource Switch.Workspace}"
+                                              Margin="0,0,0,1"
+                                              IsChecked="{Binding IsOpen, Mode=OneWay}"
+                                              Command="{Binding DataContext.ToggleCommand,
+                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              CommandParameter="{Binding}"
+                                              ToolTip="Click to open this set. Click again to close it. Right-click to edit."
+                                              Tag="{Binding DataContext,
+                                                    RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+                                    <!-- A ContextMenu sits outside the visual tree, so it reaches
+                                         the bay through PlacementTarget rather than an ancestor. -->
+                                    <ToggleButton.ContextMenu>
+                                        <ContextMenu DataContext="{Binding PlacementTarget.Tag,
+                                                                  RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Edit…" Command="{Binding EditCommand}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext,
+                                                                        RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                            <MenuItem Header="Delete" Command="{Binding DeleteCommand}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext,
+                                                                        RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                        </ContextMenu>
+                                    </ToggleButton.ContextMenu>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Ellipse Grid.Column="0" VerticalAlignment="Center"
+                                                 Margin="0,0,11,0">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse"
+                                                       BasedOn="{StaticResource Lamp}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsOpen}"
+                                                                     Value="True">
+                                                            <Setter Property="Fill"
+                                                                    Value="{DynamicResource Brush.LampOn}" />
+                                                            <Setter Property="Stroke"
+                                                                    Value="Transparent" />
+                                                            <Setter Property="Effect">
+                                                                <Setter.Value>
+                                                                    <DropShadowEffect ShadowDepth="0"
+                                                                        BlurRadius="10"
+                                                                        Color="{DynamicResource Color.LampOn}"
+                                                                        Opacity="0.75" />
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}"
+                                                       Style="{StaticResource Text.Title}" />
+                                            <TextBlock Text="{Binding Summary}"
+                                                       Style="{StaticResource Text.Mono}"
+                                                       Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <Border Grid.Column="2" Style="{StaticResource Chip.Key}">
+                                            <TextBlock Text="{Binding Shortcut}"
+                                                       Style="{StaticResource Text.Mono}" />
+                                        </Border>
+                                    </Grid>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </DockPanel>
+        </HeaderedContentControl>
+
+
+        <!-- ============ BAY 2 — task timer ============ -->
+        <HeaderedContentControl Grid.Column="1" Template="{StaticResource BayTemplate}"
+                        Header="TASK TIMER" Tag="{Binding HeaderStatus}" Margin="0,0,1,0"
+                        DataContext="{Binding Tasks}">
+            <DockPanel>
+                <!-- readout well -->
+                <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Well}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding ActiveTitle}" Style="{StaticResource Text.Title}"
+                                   FontSize="15.5" Margin="0,0,0,3" TextTrimming="CharacterEllipsis" />
+
+                        <TextBlock Text="{Binding RemainingText}" Margin="0,8,0,4">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Readout}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsOverrun}" Value="True">
+                                            <Setter Property="Foreground"
+                                                    Value="{DynamicResource Brush.ReadoutOver}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="est" Style="{StaticResource Text.Mono}" FontSize="14" />
+                            <TextBlock Text="{Binding EstimateText}" Style="{StaticResource Text.Mono}"
+                                       FontSize="14" Foreground="{DynamicResource Brush.Prime}"
+                                       Margin="6,0,14,0" />
+                            <TextBlock Text="{Binding RemainingCaption}"
+                                       Style="{StaticResource Text.Mono}" FontSize="14" />
+                        </StackPanel>
+
+                        <!-- progress scale: fill is a share of the track width -->
+                        <Border Style="{StaticResource Scale.Track}" Margin="0,16,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding Progress,
+                                                       Converter={StaticResource FractionToStar}}" />
+                                    <ColumnDefinition Width="{Binding Progress,
+                                                       Converter={StaticResource InverseFractionToStar}}" />
+                                </Grid.ColumnDefinitions>
+                                <Rectangle Grid.Column="0" Fill="{DynamicResource Brush.ScaleFill}" />
+                            </Grid>
+                        </Border>
+
+                        <Grid Margin="0,6,0,0">
+                            <TextBlock Text="START" Style="{StaticResource Text.Engraved}"
+                                       HorizontalAlignment="Left" FontSize="12" />
+                            <TextBlock Text="ESTIMATE" Style="{StaticResource Text.Engraved}"
+                                       HorizontalAlignment="Right" FontSize="12" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- anchor plate: the two values that make a restart survivable -->
+                <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Plate}" Margin="0,17,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="ANCHOR (UTC)" Style="{StaticResource Text.EngravedSmall}" />
+                            <TextBlock Text="{Binding AnchorText}"
+                                       Style="{StaticResource Text.MonoValue}" Margin="0,3,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="1">
+                            <TextBlock Text="ACCRUED PAUSE" Style="{StaticResource Text.EngravedSmall}" />
+                            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                <TextBlock Text="{Binding AccruedPauseText}"
+                                           Style="{StaticResource Text.MonoValue}" />
+                                <TextBlock Text="{Binding StopText}" Margin="10,0,0,0"
+                                           Style="{StaticResource Text.Mono}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- transport -->
+                <Grid DockPanel.Dock="Top" Margin="0,17,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="11" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- extend: only useful once a task exists -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,11,0"
+                                IsEnabled="{Binding HasActive}">
+                        <Button Content="+15" Style="{StaticResource Button.Tool}" Padding="11,10"
+                                Command="{Binding ExtendCommand}" CommandParameter="15"
+                                ToolTip="Add 15 minutes" />
+                        <Button Content="+30" Style="{StaticResource Button.Tool}" Padding="11,10"
+                                Margin="5,0,0,0"
+                                Command="{Binding ExtendCommand}" CommandParameter="30"
+                                ToolTip="Add 30 minutes" />
+                    </StackPanel>
+
+                    <!-- One button, two jobs: without a RESUME affordance a paused task looked
+                         stuck, because the only way back was the START in the list. -->
+                    <Button Grid.Column="1" Style="{StaticResource Button.Transport}"
+                            IsEnabled="{Binding HasActive}"
+                            Command="{Binding ResumeOrPauseCommand}">
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <Binding Path="IsRunning">
+                                    <Binding.Converter>
+                                        <views:BoolToTextConverter TrueText="PAUSE" FalseText="RESUME" />
+                                    </Binding.Converter>
+                                </Binding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </Button>
+
+                    <Button Grid.Column="3" Style="{StaticResource Button.Prime}"
+                            Command="{Binding CompleteCommand}" IsEnabled="{Binding HasActive}"
+                            Content="POST TO BANK"
+                            ToolTip="Mark done and post the difference to the Time Bank" />
+                </Grid>
+
+                <!-- add a task -->
+                <Grid DockPanel.Dock="Top" Margin="0,17,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Style="{StaticResource Input.Text}"
+                             Tag="New task…"
+                             Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Grid.Column="1" Width="66" Margin="8,0,0,0"
+                             Style="{StaticResource Input.Text}"
+                             ToolTip="Estimate in minutes"
+                             Text="{Binding NewEstimateMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="2" Margin="8,0,0,0" Content="ADD"
+                            Style="{StaticResource Button.Tool}" Padding="16,10"
+                            ToolTip="Add to the list without starting it"
+                            Command="{Binding AddTaskCommand}" />
+                    <!-- Start timing with nothing filled in: the name and estimate can
+                         be fixed afterwards, which is the point. -->
+                    <Button Grid.Column="3" Margin="8,0,0,0" Content="START NOW"
+                            Style="{StaticResource Button.Tool}" Padding="16,10"
+                            ToolTip="Start the clock straight away, named or not"
+                            Command="{Binding QuickStartCommand}" />
+                </Grid>
+
+                <TextBlock DockPanel.Dock="Top" Text="{Binding Error}" Margin="0,9,0,0"
+                           Foreground="{DynamicResource Brush.LampRed}"
+                           Style="{StaticResource Text.Mono}"
+                           Visibility="{Binding Error, Converter={StaticResource NullToCollapsed}}" />
+
+                <!-- task list -->
+                <Border Margin="0,14,0,0" BorderBrush="{DynamicResource Brush.EdgeHi}"
+                        BorderThickness="0,1,0,0">
+                    <Grid>
+                        <TextBlock Style="{StaticResource Text.Note}" TextAlignment="Center"
+                                   VerticalAlignment="Top" Margin="0,26,0,0"
+                                   Text="No tasks yet.&#x0a;Add one above with an honest estimate."
+                                   Visibility="{Binding Tasks.Count,
+                                                Converter={StaticResource ZeroToVisible}}" />
+
+                        <ListBox ItemsSource="{Binding Tasks}" Background="Transparent"
+                                 BorderThickness="0" HorizontalContentAlignment="Stretch"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 Visibility="{Binding Tasks.Count,
+                                              Converter={StaticResource NonZeroToVisible}}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <Border x:Name="Face" Background="Transparent"
+                                                        BorderBrush="{DynamicResource Brush.EdgeFaint}"
+                                                        BorderThickness="0,0,0,1" Padding="4,10">
+                                                    <ContentPresenter />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Face" Property="Background"
+                                                                Value="{DynamicResource Brush.HoverWash}" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Ellipse Grid.Column="0" VerticalAlignment="Center"
+                                                 Margin="0,0,11,0">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse"
+                                                       BasedOn="{StaticResource Lamp}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}"
+                                                                     Value="True">
+                                                            <Setter Property="Fill"
+                                                                    Value="{DynamicResource Brush.LampOn}" />
+                                                            <Setter Property="Stroke" Value="Transparent" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}"
+                                                       Style="{StaticResource Text.Title}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                <TextBlock Text="{Binding EstimateText}"
+                                                           Style="{StaticResource Text.Mono}" />
+                                                <TextBlock Text="{Binding ActualText}" Margin="10,0,0,0"
+                                                           Style="{StaticResource Text.Mono}" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="2" Text="{Binding RemainingText}"
+                                                   VerticalAlignment="Center" Margin="0,0,10,0"
+                                                   Style="{StaticResource Text.MonoValue}" />
+
+                                        <StackPanel Grid.Column="3" Orientation="Horizontal"
+                                                    VerticalAlignment="Center">
+                                            <Button Content="START" Style="{StaticResource Button.Tool}"
+                                                    Padding="11,7"
+                                                    Command="{Binding DataContext.StartCommand,
+                                                              RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                    CommandParameter="{Binding}" />
+
+                                            <!-- Tick a task off without having to start it first. -->
+                                            <Button Content="✓ DONE" Margin="5,0,0,0"
+                                                    Style="{StaticResource Button.Tool}" Padding="11,7"
+                                                    ToolTip="Mark done and post to the Time Bank"
+                                                    Command="{Binding DataContext.CompleteTaskCommand,
+                                                              RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                    CommandParameter="{Binding}" />
+
+                                            <Button Margin="5,0,0,0" Style="{StaticResource Button.IconDanger}"
+                                                            ToolTip="Delete this task"
+                                                            Command="{Binding DataContext.DeleteCommand,
+                                                                      RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                            CommandParameter="{Binding}">
+                                                        <Path Style="{StaticResource Glyph}" Data="{StaticResource Geo.Close}" />
+                                                    </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+            </DockPanel>
+        </HeaderedContentControl>
+
+        <!-- ============ BAY 3 — Time Bank ============ -->
+        <HeaderedContentControl Grid.Column="2" Template="{StaticResource BayTemplate}"
+                        Header="TIME BANK" Tag="{Binding WeekLabel}"
+                        DataContext="{Binding Bank}">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Well}" Padding="13,15,13,11">
+                    <StackPanel>
+                        <!-- centre-zero meter: a needle left of zero reads as a debit
+                             before anyone reads a number -->
+                        <Viewbox Height="150" HorizontalAlignment="Center">
+                            <Canvas Width="240" Height="132">
+                                <Path Stroke="{DynamicResource Brush.LampRed}" StrokeThickness="7"
+                                      Opacity="0.36" StrokeStartLineCap="Flat"
+                                      Data="M 24,120 A 96,96 0 0 1 120,24" />
+                                <Path Stroke="{DynamicResource Brush.LampOn}" StrokeThickness="7"
+                                      Opacity="0.36" StrokeStartLineCap="Flat"
+                                      Data="M 120,24 A 96,96 0 0 1 216,120" />
+                                <Line X1="120" Y1="16" X2="120" Y2="34"
+                                      Stroke="{DynamicResource Brush.Prime}" StrokeThickness="2" />
+
+                                <Line X1="120" Y1="120" X2="120" Y2="44"
+                                      Stroke="{DynamicResource Brush.Phos}" StrokeThickness="2">
+                                    <Line.RenderTransform>
+                                        <RotateTransform CenterX="120" CenterY="120"
+                                                         Angle="{Binding NeedleAngle}" />
+                                    </Line.RenderTransform>
+                                </Line>
+                                <Ellipse Canvas.Left="114" Canvas.Top="114" Width="12" Height="12"
+                                         Fill="{DynamicResource Brush.Phos}" />
+                            </Canvas>
+                        </Viewbox>
+
+                        <Grid Margin="4,10,4,2">
+                            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                <TextBlock Text="BALANCE THIS WEEK"
+                                           Style="{StaticResource Text.EngravedSmall}" />
+                                <TextBlock Text="{Binding WeekBalanceText}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock"
+                                               BasedOn="{StaticResource Text.Balance}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsWeekCredit}"
+                                                             Value="True">
+                                                    <Setter Property="Foreground"
+                                                            Value="{DynamicResource Brush.LampOn}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                <TextBlock Text="ALL TIME" Style="{StaticResource Text.EngravedSmall}"
+                                           TextAlignment="Right" />
+                                <TextBlock Text="{Binding AllTimeBalanceText}"
+                                           Style="{StaticResource Text.MonoValue}" TextAlignment="Right" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Post time with no task attached: work done before the app was open,
+                     or banked time deliberately spent. -->
+                <Grid DockPanel.Dock="Top" Margin="0,13,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="ADJUST" VerticalAlignment="Center"
+                               Style="{StaticResource Text.EngravedSmall}" Margin="0,0,9,0" />
+                    <TextBox Grid.Column="1" Style="{StaticResource Input.Text}" Padding="9,7"
+                             ToolTip="Minutes to add or take out"
+                             Text="{Binding AdjustMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="2" Content="+ CREDIT" Margin="8,0,0,0" Padding="12,8"
+                            Style="{StaticResource Button.Tool}"
+                            ToolTip="Add time you worked away from the timer"
+                            Command="{Binding AdjustCommand}" CommandParameter="+" />
+                    <Button Grid.Column="3" Content="− SPEND" Margin="5,0,0,0" Padding="12,8"
+                            Style="{StaticResource Button.Tool}"
+                            ToolTip="Spend banked time on a longer break"
+                            Command="{Binding AdjustCommand}" CommandParameter="-" />
+                </Grid>
+
+                <!-- ledger -->
+                <Border BorderBrush="{DynamicResource Brush.EdgeHi}" BorderThickness="0,1,0,0"
+                        Margin="0,15,0,0">
+                    <Grid>
+                        <TextBlock Style="{StaticResource Text.Note}" TextAlignment="Center"
+                                   VerticalAlignment="Top" Margin="0,26,0,0"
+                                   Text="No ledger entries yet.&#x0a;Finish a task to post one."
+                                   Visibility="{Binding Entries.Count,
+                                                Converter={StaticResource ZeroToVisible}}" />
+
+                        <ItemsControl ItemsSource="{Binding Entries}">
+                            <ItemsControl.Template>
+                                <ControlTemplate TargetType="ItemsControl">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource Brush.EdgeFaint}"
+                                            BorderThickness="0,0,0,1" Padding="4,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding Title}"
+                                                           Foreground="{DynamicResource Brush.TextLog}"
+                                                           Style="{StaticResource Text.Body}"
+                                                           FontSize="13.5"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding WhenText}" Margin="0,2,0,0"
+                                                           Style="{StaticResource Text.Mono}" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding DeltaText}"
+                                                       VerticalAlignment="Center" Margin="10,0,0,0"
+                                                       FontFamily="{StaticResource Font.Mono}"
+                                                       FontSize="14.5">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground"
+                                                                Value="{DynamicResource Brush.LampRed}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsCredit}"
+                                                                         Value="True">
+                                                                <Setter Property="Foreground"
+                                                                        Value="{DynamicResource Brush.LampOn}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </DockPanel>
+        </HeaderedContentControl>
+    </Grid>
+</UserControl>

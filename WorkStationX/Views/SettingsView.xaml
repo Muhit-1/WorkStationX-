@@ -1,0 +1,336 @@
+<UserControl x:Class="WorkStationX.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:WorkStationX.Views">
+
+    <Border Background="{DynamicResource Brush.BayFace}" Padding="32,26">
+        <!-- Two columns: appearance and shortcuts left, reminders right. -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="380" />
+                <ColumnDefinition Width="34" />
+                <ColumnDefinition Width="*" MinWidth="380" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ==================== LEFT ==================== -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="THEME"
+                                   Style="{StaticResource Text.Engraved}" />
+                        <Rectangle Grid.Column="1" Style="{StaticResource Panel.HeadRule}"
+                                   Margin="10,0,0,0" />
+                    </Grid>
+
+                    <!-- A grid of swatches. The colours say what the theme is, so the
+                         paragraph of description that used to be here is gone. -->
+                    <ListBox ItemsSource="{Binding Themes}"
+                             SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"
+                             Background="Transparent" BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="2" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Margin" Value="0,0,9,9" />
+                                <Setter Property="Cursor" Value="Hand" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border x:Name="Face" CornerRadius="3" Padding="14,12"
+                                                    Background="{DynamicResource Brush.Plate}"
+                                                    BorderBrush="{DynamicResource Brush.EdgeHi}"
+                                                    BorderThickness="1">
+                                                <StackPanel>
+                                                    <!-- panel / action / lamp, the three
+                                                         colours that define a colourway -->
+                                                    <StackPanel Orientation="Horizontal"
+                                                                Margin="0,0,0,10">
+                                                        <Border Width="30" Height="30"
+                                                                CornerRadius="3"
+                                                                Background="{Binding PanelHex}"
+                                                                BorderBrush="{DynamicResource Brush.EdgeHi}"
+                                                                BorderThickness="1" />
+                                                        <Border Width="30" Height="30"
+                                                                CornerRadius="3" Margin="5,0,0,0"
+                                                                Background="{Binding PrimeHex}" />
+                                                        <Border Width="30" Height="30"
+                                                                CornerRadius="3" Margin="5,0,0,0"
+                                                                Background="{Binding LampHex}" />
+                                                    </StackPanel>
+
+                                                    <TextBlock Text="{Binding Name}"
+                                                               Style="{StaticResource Text.Title}" />
+                                                    <TextBlock Text="{Binding Blurb}"
+                                                               Style="{StaticResource Text.Mono}"
+                                                               Margin="0,2,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Face" Property="Background"
+                                                            Value="{DynamicResource Brush.PlateHover}" />
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Face" Property="BorderBrush"
+                                                            Value="{DynamicResource Brush.Prime}" />
+                                                    <Setter TargetName="Face" Property="BorderThickness"
+                                                            Value="2" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+
+                    <!-- ==================== shortcuts ==================== -->
+                    <Grid Margin="0,22,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="SHORTCUTS"
+                                   Style="{StaticResource Text.Engraved}" />
+                        <Rectangle Grid.Column="1" Style="{StaticResource Panel.HeadRule}"
+                                   Margin="10,0,0,0" />
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource Text.Note}" Margin="0,0,0,12"
+                               Text="Work anywhere in Windows. Click SET, then press your combination." />
+
+                    <ItemsControl ItemsSource="{Binding Hotkeys}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Panel.Plate}" Padding="14,10"
+                                        Margin="0,0,0,7">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Description}"
+                                                       Style="{StaticResource Text.Title}"
+                                                       FontSize="14.5" />
+                                            <TextBlock Text="Used by another app"
+                                                       Style="{StaticResource Text.Mono}"
+                                                       Margin="0,2,0,0"
+                                                       Foreground="{DynamicResource Brush.LampRed}"
+                                                       Visibility="{Binding HasConflict,
+                                                                    Converter={StaticResource BoolToVisible}}" />
+                                        </StackPanel>
+
+                                        <Border Grid.Column="1" Style="{StaticResource Chip.Key}"
+                                                MinWidth="132" Padding="10,6" Margin="0,0,7,0">
+                                            <TextBlock Text="{Binding Display}"
+                                                       TextAlignment="Center"
+                                                       Style="{StaticResource Text.MonoValue}"
+                                                       FontSize="14" />
+                                        </Border>
+
+                                        <Button Grid.Column="2" Content="SET" Padding="12,7"
+                                                MinWidth="58"
+                                                Style="{StaticResource Button.Tool}"
+                                                Command="{Binding DataContext.BeginCaptureCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}" />
+
+                                        <Button Grid.Column="3" Margin="5,0,0,0"
+                                                Style="{StaticResource Button.IconDanger}"
+                                                ToolTip="Clear this shortcut"
+                                                Command="{Binding DataContext.ClearHotkeyCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}">
+                                            <Path Style="{StaticResource Glyph}"
+                                                  Data="{StaticResource Geo.Close}" />
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ==================== RIGHT ==================== -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="REMINDERS"
+                                   Style="{StaticResource Text.Engraved}" />
+                        <Rectangle Grid.Column="1" Style="{StaticResource Panel.HeadRule}"
+                                   Margin="10,0,0,0" />
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource Text.Note}" Margin="0,0,0,14"
+                               Text="Reminders only fire while WorkStationX is running, so leave it in the tray rather than closing it." />
+
+                    <Border Style="{StaticResource Panel.Plate}" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="NEW REMINDER"
+                                       Style="{StaticResource Text.EngravedSmall}"
+                                       Margin="0,0,0,9" />
+
+                            <TextBox Style="{StaticResource Input.Text}"
+                                     Tag="Stand up and stretch"
+                                     Text="{Binding NewMessage, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <Grid Margin="0,9,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <ComboBox Grid.Column="0" Width="130" VerticalAlignment="Center"
+                                          Style="{StaticResource Input.Combo}"
+                                          ItemsSource="{Binding ScheduleTypes}"
+                                          SelectedItem="{Binding NewScheduleType}" />
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                            Margin="8,0,0,0" VerticalAlignment="Center"
+                                            Visibility="{Binding IsHourly,
+                                                         Converter={StaticResource BoolToVisible}}">
+                                    <TextBlock Text="every" Style="{StaticResource Text.Mono}"
+                                               VerticalAlignment="Center" Margin="0,0,7,0" />
+                                    <TextBox Width="88" Style="{StaticResource Input.Text}"
+                                             Text="{Binding NewIntervalHours,
+                                                    UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Text="h" Style="{StaticResource Text.Mono}"
+                                               VerticalAlignment="Center" Margin="7,0,0,0" />
+                                </StackPanel>
+
+                                <ComboBox Grid.Column="2" Width="136" Margin="8,0,0,0"
+                                          VerticalAlignment="Center"
+                                          Style="{StaticResource Input.Combo}"
+                                          ItemsSource="{Binding DaysOfWeek}"
+                                          SelectedItem="{Binding NewDayOfWeek}"
+                                          Visibility="{Binding IsWeekly,
+                                                       Converter={StaticResource BoolToVisible}}" />
+
+                                <StackPanel Grid.Column="3" Orientation="Horizontal"
+                                            Margin="8,0,0,0" VerticalAlignment="Center"
+                                            Visibility="{Binding NeedsTimeOfDay,
+                                                         Converter={StaticResource BoolToVisible}}">
+                                    <TextBlock Text="at" Style="{StaticResource Text.Mono}"
+                                               VerticalAlignment="Center" Margin="0,0,7,0" />
+                                    <TextBox Width="96" Style="{StaticResource Input.Text}"
+                                             Text="{Binding NewTimeOfDay,
+                                                    UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Button Content="ADD REMINDER" HorizontalAlignment="Left"
+                                    Margin="0,12,0,0" Style="{StaticResource Button.Tool}"
+                                    Padding="18,10" Command="{Binding AddReminderCommand}" />
+
+                            <TextBlock Text="{Binding ReminderError}" Margin="0,9,0,0"
+                                       Foreground="{DynamicResource Brush.LampRed}"
+                                       Style="{StaticResource Text.Mono}"
+                                       Visibility="{Binding ReminderError,
+                                                    Converter={StaticResource NullToCollapsed}}" />
+                        </StackPanel>
+                    </Border>
+
+                    <ItemsControl ItemsSource="{Binding Reminders}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Panel.Plate}" Padding="16,13"
+                                        Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Ellipse Grid.Column="0" VerticalAlignment="Center"
+                                                 Margin="0,0,13,0">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse"
+                                                       BasedOn="{StaticResource Lamp}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}"
+                                                                     Value="True">
+                                                            <Setter Property="Fill"
+                                                                    Value="{DynamicResource Brush.LampOn}" />
+                                                            <Setter Property="Stroke"
+                                                                    Value="Transparent" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Message}"
+                                                       Style="{StaticResource Text.Title}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                                <TextBlock Text="{Binding ScheduleText}"
+                                                           Style="{StaticResource Text.Mono}" />
+                                                <TextBlock Text="{Binding NextFireText}"
+                                                           Margin="12,0,0,0"
+                                                           Style="{StaticResource Text.Mono}"
+                                                           Foreground="{DynamicResource Brush.Prime}" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                                    VerticalAlignment="Center">
+                                            <Button Style="{StaticResource Button.Tool}"
+                                                    Padding="11,7"
+                                                    Command="{Binding DataContext.ToggleReminderCommand,
+                                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock>
+                                                    <TextBlock.Text>
+                                                        <Binding Path="IsActive">
+                                                            <Binding.Converter>
+                                                                <views:BoolToTextConverter
+                                                                    TrueText="PAUSE" FalseText="ENABLE" />
+                                                            </Binding.Converter>
+                                                        </Binding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </Button>
+                                            <Button Margin="5,0,0,0"
+                                                    Style="{StaticResource Button.IconDanger}"
+                                                    ToolTip="Delete"
+                                                    Command="{Binding DataContext.DeleteReminderCommand,
+                                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <Path Style="{StaticResource Glyph}"
+                                                      Data="{StaticResource Geo.Close}" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

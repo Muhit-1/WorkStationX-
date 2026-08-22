@@ -1,0 +1,38 @@
+<Window x:Class="WorkStationX.Views.RegionSelectOverlay"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Select a region"
+        WindowStyle="None" ShowInTaskbar="False" Topmost="True"
+        AllowsTransparency="False" Cursor="Cross"
+        Background="Black">
+
+    <!-- Same trick as the colour picker: an opaque window over a frozen screenshot,
+         because a full-screen transparent window is software-rendered and crawls. -->
+    <Canvas x:Name="Root" ClipToBounds="True">
+        <Image x:Name="Frozen" Canvas.Left="0" Canvas.Top="0" />
+
+        <!-- Dim everything, then punch a clear hole where the selection is. -->
+        <Rectangle x:Name="Dim" Canvas.Left="0" Canvas.Top="0" Fill="#88000000" />
+
+        <Rectangle x:Name="Marquee" Visibility="Collapsed"
+                   Stroke="{DynamicResource Brush.Prime}" StrokeThickness="1.5"
+                   StrokeDashArray="6 3" />
+
+        <Border x:Name="SizeChip" Visibility="Collapsed"
+                Background="{DynamicResource Brush.Panel}"
+                BorderBrush="{DynamicResource Brush.Prime}" BorderThickness="1"
+                Padding="9,5" IsHitTestVisible="False">
+            <TextBlock x:Name="SizeText" Text="0 × 0"
+                       FontFamily="{StaticResource Font.Mono}" FontSize="14"
+                       Foreground="{DynamicResource Brush.Phos}" />
+        </Border>
+
+        <Border x:Name="Hint" Canvas.Left="0" Canvas.Top="0"
+                Background="{DynamicResource Brush.Panel}"
+                BorderBrush="{DynamicResource Brush.EdgeHi}" BorderThickness="1"
+                Padding="16,12" IsHitTestVisible="False">
+            <TextBlock Text="Drag to select a region · Esc to cancel"
+                       Style="{StaticResource Text.Engraved}" />
+        </Border>
+    </Canvas>
+</Window>

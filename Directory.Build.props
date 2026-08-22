@@ -2,14 +2,10 @@
 
   <!--
     Single place to retarget the entire solution.
-
-    When the .NET 10 SDK is installed, change WsxTargetFramework to:
-        net10.0-windows10.0.19041.0
     The Windows SDK suffix is required for WinRT interop (toast notifications).
-    Nothing else in the solution needs to change.
   -->
   <PropertyGroup>
-    <WsxTargetFramework>net8.0-windows</WsxTargetFramework>
+    <WsxTargetFramework>net10.0-windows10.0.19041.0</WsxTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

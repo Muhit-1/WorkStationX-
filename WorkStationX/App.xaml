@@ -3,6 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- No StartupUri: the window is resolved from DI in App.OnStartup. -->
     <Application.Resources>
-        <ResourceDictionary />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Index 0 is the palette. ThemeService swaps THIS entry at runtime,
+                     so it must stay first. Everything else uses DynamicResource. -->
+                <ResourceDictionary Source="Themes/Palettes/DarkGreen.xaml" />
+                <ResourceDictionary Source="Themes/Typography.xaml" />
+                <ResourceDictionary Source="Themes/Controls.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

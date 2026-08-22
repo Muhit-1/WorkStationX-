@@ -1,0 +1,78 @@
+<Window x:Class="WorkStationX.Views.AnnotationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Annotate"
+        Width="1000" Height="720"
+        MinWidth="620" MinHeight="480"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Brush.Shell}">
+
+    <Border Background="{DynamicResource Brush.BayFace}"
+            BorderBrush="{DynamicResource Brush.EdgeWindow}" BorderThickness="1"
+            Padding="16">
+        <DockPanel>
+
+            <!-- toolbar -->
+            <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Plate}" Margin="0,0,0,12"
+                    Padding="12,10">
+                <DockPanel LastChildFill="False">
+                    <TextBlock DockPanel.Dock="Left" Text="TOOL" VerticalAlignment="Center"
+                               Style="{StaticResource Text.EngravedSmall}" Margin="0,0,11,0" />
+
+                    <RadioButton DockPanel.Dock="Left" Content="PEN" IsChecked="True"
+                                 Style="{StaticResource Toggle.Tool}" Tag="Pen"
+                                 Checked="OnToolChecked" />
+                    <RadioButton DockPanel.Dock="Left" Content="BOX" Margin="5,0,0,0"
+                                 Style="{StaticResource Toggle.Tool}" Tag="Rectangle"
+                                 Checked="OnToolChecked" />
+                    <RadioButton DockPanel.Dock="Left" Content="ARROW" Margin="5,0,0,0"
+                                 Style="{StaticResource Toggle.Tool}" Tag="Arrow"
+                                 Checked="OnToolChecked" />
+                    <RadioButton DockPanel.Dock="Left" Content="TEXT" Margin="5,0,16,0"
+                                 Style="{StaticResource Toggle.Tool}" Tag="Text"
+                                 Checked="OnToolChecked" />
+
+                    <TextBlock DockPanel.Dock="Left" Text="COLOUR" VerticalAlignment="Center"
+                               Style="{StaticResource Text.EngravedSmall}" Margin="0,0,9,0" />
+                    <ItemsControl DockPanel.Dock="Left" x:Name="Swatches" VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+
+                    <Button DockPanel.Dock="Right" Content="SAVE…" Width="120"
+                            Style="{StaticResource Button.Prime}" Padding="10,9"
+                            Click="OnSave" />
+                    <Button DockPanel.Dock="Right" Content="COPY" Margin="0,0,8,0"
+                            Style="{StaticResource Button.Tool}" Padding="16,9"
+                            Click="OnCopy" />
+                    <Button DockPanel.Dock="Right" Content="CLEAR" Margin="0,0,8,0"
+                            Style="{StaticResource Button.Tool}" Padding="16,9"
+                            Click="OnClear" />
+                    <Button DockPanel.Dock="Right" Content="UNDO" Margin="0,0,8,0"
+                            Style="{StaticResource Button.Tool}" Padding="16,9"
+                            ToolTip="Ctrl+Z" Click="OnUndo" />
+                </DockPanel>
+            </Border>
+
+            <TextBlock DockPanel.Dock="Bottom" Margin="0,10,0,0"
+                       Style="{StaticResource Text.Mono}"
+                       Text="Drag on the image to draw · Ctrl+Z undo · Ctrl+S save · Ctrl+C copy" />
+
+            <!-- canvas -->
+            <Border BorderBrush="{DynamicResource Brush.EdgeLo}" BorderThickness="1"
+                    Background="{DynamicResource Brush.Well}">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+                    <Grid x:Name="Stage" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image x:Name="Shot" Stretch="None" />
+                        <Canvas x:Name="Overlay" Background="Transparent"
+                                Cursor="Cross" ClipToBounds="True" />
+                    </Grid>
+                </ScrollViewer>
+            </Border>
+        </DockPanel>
+    </Border>
+</Window>

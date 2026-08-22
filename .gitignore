@@ -43,7 +43,12 @@ packages/
 ~$*
 WorkstationX Project promt.docx
 WorkStationX_Project_Plan_v1.0.docx
+v2-bench-ice_1.html
 
 ## OS
 Thumbs.db
 desktop.ini
+
+## Publish output
+publish/
+dist/

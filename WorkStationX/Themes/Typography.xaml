@@ -1,0 +1,94 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Three roles from the design: sans (body), cond (engraved labels), mono (readouts).
+
+        Archivo and Archivo Narrow are embedded from Assets/Fonts, so the app carries
+        its own typography and nothing needs installing on the user's machine. The comma
+        fallback keeps text readable if a face ever fails to load.
+
+        Mono stays Consolas: it ships with Windows, is properly monospaced, and has the
+        tabular figures the countdown needs.
+
+        Every style below points at these three keys, so changing a face means editing
+        only this file.
+    -->
+    <FontFamily x:Key="Font.Sans">/Assets/Fonts/#Archivo, Segoe UI</FontFamily>
+    <FontFamily x:Key="Font.Cond">/Assets/Fonts/#Archivo Narrow, Segoe UI</FontFamily>
+    <FontFamily x:Key="Font.Mono">Consolas</FontFamily>
+
+    <!-- Engraved panel label: the ".eng" class. Condensed, wide-tracked, upper. -->
+    <Style x:Key="Text.Engraved" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Cond}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Engrave}" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+    </Style>
+
+    <!-- Smaller engraved key, used on the anchor plate -->
+    <Style x:Key="Text.EngravedSmall" TargetType="TextBlock" BasedOn="{StaticResource Text.Engraved}">
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.EngraveDim}" />
+    </Style>
+
+    <!-- Body copy -->
+    <Style x:Key="Text.Body" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Sans}" />
+        <Setter Property="FontSize" Value="15.5" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Phos}" />
+    </Style>
+
+    <!-- Item title, e.g. a workspace name -->
+    <Style x:Key="Text.Title" TargetType="TextBlock" BasedOn="{StaticResource Text.Body}">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextBright}" />
+    </Style>
+
+    <!-- Dim explanatory note -->
+    <Style x:Key="Text.Note" TargetType="TextBlock" BasedOn="{StaticResource Text.Body}">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.EngraveDim}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="LineHeight" Value="23" />
+    </Style>
+
+    <!-- Mono metadata line, e.g. "VS 2022 - pwsh /src - Figma" -->
+    <Style x:Key="Text.Mono" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Mono}" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.EngraveDim}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style x:Key="Text.MonoValue" TargetType="TextBlock" BasedOn="{StaticResource Text.Mono}">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextMono}" />
+    </Style>
+
+    <!-- The big countdown. Tabular figures stop the digits jittering as they tick. -->
+    <Style x:Key="Text.Readout" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Mono}" />
+        <Setter Property="FontWeight" Value="Light" />
+        <Setter Property="FontSize" Value="74" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Phos}" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+        <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
+    </Style>
+
+    <!-- Time Bank balance -->
+    <Style x:Key="Text.Balance" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Mono}" />
+        <Setter Property="FontSize" Value="36" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.LampRed}" />
+    </Style>
+
+    <!-- Status bar text -->
+    <Style x:Key="Text.Status" TargetType="TextBlock" BasedOn="{StaticResource Text.Mono}">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+</ResourceDictionary>
